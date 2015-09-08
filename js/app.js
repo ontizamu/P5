@@ -1,35 +1,34 @@
-//var ViewModel = function () {
+var places = [
+      {
+        name:'Xtreme Air Jump N Skate',
+        address:'910 E Pecos Rd Chandler, AZ'
+      },
+      { 
+        name:'Skateland',
+        address:'1101 W Ray Rd Chandler, AZ'
+      },
+      {
+        name:'Chandler Public Library',
+        address:'22 S Delaware St Chandler, AZ'
+      },
+      {
+        name:'Tumbleweed Park',
+        address:'745 E Germann Rd Chandler, AZ'
+      },
+      {
+        name:'Chandler Center for the Arts',
+        address:'250 N Arizona Ave Chandler, AZ'
+      }
+];
 
-  var map;    // declares a global map variable
+var map; 
 
+var Place = function (data) {
+  this.name = ko.observable (data.name);
+  this.address = ko.observable (data.address);
+};
 
-  /*
-  Start here! initializeMap() is called when page is loaded.
-  */
-  function initializeMap() {
-
-    var locations = [
-            {
-              name:'Xtreme Air Jump N Skate',
-              address:'910 E Pecos Rd Chandler, AZ'
-            },
-            { 
-              name:'Skateland',
-              address:'1101 W Ray Rd Chandler, AZ'
-            },
-            {
-              name:'Chandler Public Library',
-              address:'22 S Delaware St Chandler, AZ'
-            },
-            {
-              name:'Tumbleweed Park',
-              address:'745 E Germann Rd Chandler, AZ'
-            },
-            {
-              name:'Chandler Center for the Arts',
-              address:'250 N Arizona Ave Chandler, AZ'
-            }
-    ];
+function initializeMap() {
 
     var mapOptions = {
       disableDefaultUI: true
@@ -55,9 +54,9 @@
 
       var address = placeData.name + ' Chandler, AZ';
 
-      for (var location in locations) {
-          if (locations[location].address === address) {
-              name = locations[location].name;
+      for (var place in places) {
+          if (places[place].address === address) {
+              name = places[place].name;
           }
       }
 
@@ -170,9 +169,18 @@
 
     // pinPoster(locations) creates pins on the map for each location in
     // the locations array
-    pinPoster(locations);
+    pinPoster(places);
 
   }
+
+var ViewModel = function () {
+  var self = this;
+
+  this.placeList = ko.observableArray([]);
+
+  places.forEach(function(placeItem){
+    self.placeList.push(new Place(placeItem));
+  });
 
   // Calls the initializeMap() function when the page loads
   window.addEventListener('load', initializeMap);
@@ -183,8 +191,7 @@
   // Make sure the map bounds get updated on page resize
     map.fitBounds(mapBounds);
   });
+};
 
+ko.applyBindings(new ViewModel());
 
-//}
-
-//ko.applyBindings(new ViewModel());

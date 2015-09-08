@@ -6,22 +6,25 @@
     <link href="css/style.css" rel="stylesheet" type="text/css">
     <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
     <script src="js/jQuery.js"></script>
-    <script src="js/app.js"></script>
     <meta name="viewport" content="width=device-width"> 
 </head>
 <body>
 	<div id="main">
-		<div id="mapDiv">
-            <h2>My Neighborhood</h2>
+        <h2>List of interesting places</h2>
+        <ul data-bind="foreach: placeList" id="places-list">
+            <li data-bind="text: name"></li>
+        </ul>
+		<div id="mapDiv">            
             <div id="map">
             </div>
 		</div>
 	</div>
     <script src="js/lib/knockout-3.3.0.js"></script>
+    <script src="js/app.js"></script>    
     <script type="text/javascript">
         if(document.getElementById('map') === null) {
             $('#mapDiv').append('Google Maps could not be loaded');
         }
-    </script>
+    </script> 
 </body>
 </html>
