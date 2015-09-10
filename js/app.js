@@ -1,23 +1,31 @@
 var places = [
+     {
+        name:'Arrowhead Meadows Park',
+        address:'1475 W Erie St Chandler, AZ'
+      },
       {
-        name:'Xtreme Air Jump N Skate',
-        address:'910 E Pecos Rd Chandler, AZ'
+        name:'Chandler Center for the Arts',
+        address:'250 N Arizona Ave Chandler, AZ'
+      },
+      {
+        name:'Chandler Public Library',
+        address:'22 S Delaware St Chandler, AZ'
       },
       { 
         name:'Skateland',
         address:'1101 W Ray Rd Chandler, AZ'
       },
       {
-        name:'Chandler Public Library',
-        address:'22 S Delaware St Chandler, AZ'
-      },
-      {
         name:'Tumbleweed Park',
         address:'745 E Germann Rd Chandler, AZ'
       },
       {
-        name:'Chandler Center for the Arts',
-        address:'250 N Arizona Ave Chandler, AZ'
+        name:'Vision Gallery',
+        address:'10 E Chicago St Chandler, AZ'
+      },
+      {
+        name:'Xtreme Air Jump N Skate',
+        address:'910 E Pecos Rd Chandler, AZ'
       }
 ];
 
@@ -75,15 +83,13 @@ function initializeMap() {
       $.getJSON (fsUrl, function (data) {
         var placeId;
         placeID = data.response.venues[0].id;
-        //console.log(placeID);
+
         var detailurl = 'https://api.foursquare.com/v2/venues/' + placeID + '?oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904';
-        //console.log(detailurl);
         var categories='';
         var contactPhone,description;
 
         $.getJSON(detailurl, function (data) {
-          //alert("\nStatus: " + status);
-          console.dir(data);
+          //console.dir(data);
 
           var categoriesLength=data.response.venue.categories.length;
           for (var i=0; i<categoriesLength-1; i++)
@@ -176,11 +182,26 @@ function initializeMap() {
 var ViewModel = function () {
   var self = this;
 
+  // Observable array of places
+
   this.placeList = ko.observableArray([]);
 
-  places.forEach(function(placeItem){
-    self.placeList.push(new Place(placeItem));
-  });
+  this.searchString = ko.observable('');
+
+  self.filter = ko.computed(function() {
+
+    var inputValue = self.searchString();
+    console.log(inputValue);
+  
+    self.placeList.removeAll();
+
+    places.forEach(function(placeItem,place){
+      if (places[place].name.toLowerCase().indexOf(inputValue.toLowerCase())>=0) {
+        self.placeList.push(new Place(placeItem));
+      };
+    });   
+  
+  }, this); 
 
   // Calls the initializeMap() function when the page loads
   window.addEventListener('load', initializeMap);
