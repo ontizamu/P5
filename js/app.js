@@ -59,75 +59,72 @@ var Place = function (data) {
   this.marker = ko.observable(data.marker)
 };
 
-function createInfoWindow(placeData,map)
-{
+function createInfoWindow(placeData,map){
+
   // Ask for info from FourSquare API and display it in the InfoWindow.
+
+  // Look for the place ID
 
   var fsUrl = 'https://api.foursquare.com/v2/venues/search?near=Chandler,%20AZ&oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904&query=' + placeData.name + '';
 
   $.getJSON (fsUrl, function (data) {
-    var placeId;
-    placeID = data.response.venues[0].id;
 
-    var detailurl = 'https://api.foursquare.com/v2/venues/' + placeID + '?oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904';
-    var categories='';
-    var contactPhone,description;
+    if (data.response.venues.length>0)
+    {
 
-    $.getJSON(detailurl, function (data) {
-    //console.dir(data);
+      var placeId;
+      placeID = data.response.venues[0].id;
 
-      var categoriesLength=data.response.venue.categories.length;
-      for (var i=0; i<categoriesLength-1; i++)
-      {
-        categories = categories + data.response.venue.categories[i].name + ', ';
+      var detailurl = 'https://api.foursquare.com/v2/venues/' + placeID + '?oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904';
+      var categories='';
+      var contactPhone,description;
+
+      // Get place info: categories and contact phone.
+
+      $.getJSON(detailurl, function (data) {
+      console.dir(data);
+
+      if (data.response.venue.categories.length > 0 && data.response.venue.contact.formattedPhone){
+
+        var categoriesLength=data.response.venue.categories.length;
+        for (var i=0; i<categoriesLength-1; i++){
+          categories = categories + data.response.venue.categories[i].name + ', ';
+        }
+        categories = categories + data.response.venue.categories[categoriesLength-1].name;
+        contactPhone = data.response.venue.contact.formattedPhone;
+        //description = data.response.venue.description;
+
+        var contentstring = '<div id="content">'+
+        '<div id="siteNotice">'+
+        '</div>'+
+        '<h2 id="firstHeading" class="firstHeading">' + placeData.name + '</h2>'+
+        '<div id="bodyContent">'+
+        '<p>' + categories + '</p>'+
+        '<p>' + placeData.address + ' ' + contactPhone + '</p>' +
+        //'<p>' + description + '</p>' +
+        '</div>'+
+        '</div>';
+
+        //  Create an infoWindow that displays more information about the location
+          
+        var infoWindow = new google.maps.InfoWindow({
+          content: contentstring
+        });
+
+        // when the user clicks on a marker, the infoWindow is opened and the marker bounces.
+
+        infoWindow.open(map,placeData.marker);
+      } else {
+        alert(placeData.name + " info is not complete");
       }
-      categories = categories + data.response.venue.categories[categoriesLength-1].name;
-      contactPhone = data.response.venue.contact.formattedPhone;
-      description = data.response.venue.description;
-
-      var contentstring = '<div id="content">'+
-      '<div id="siteNotice">'+
-      '</div>'+
-      '<h2 id="firstHeading" class="firstHeading">' + placeData.name + '</h2>'+
-      '<div id="bodyContent">'+
-      '<p>' + categories + '</p>'+
-      '<p>' + placeData.address + ' ' + contactPhone + '</p>' +
-      //'<p>' + description + '</p>' +
-      '</div>'+
-      '</div>';
-
-       //  Create an infoWindow that displays more information about the location
-          
-      var infoWindow = new google.maps.InfoWindow({
-        content: contentstring
-      });
-
-
-      // when the user click on a marker, an infoWindow will open and the marker will bounce.
-
-      google.maps.event.addListener(placeData.marker, 'click', function() {
-        infoWindow.open(map,placeData.marker);
-        placeData.marker.setAnimation(google.maps.Animation.BOUNCE);
-        setTimeout(function(){ placeData.marker.setAnimation(null); }, 2000); 
-      }); 
-    }).error(function(e){
-      var contentstring = "Failed to get FourSquare Info";
-
-       //  Create an infoWindow that displays the error message
-          
-      var infoWindow = new google.maps.InfoWindow({
-        content: contentstring
-      });
-
-
-      // when the user click on a marker, an infoWindow will open and the marker will bounce.
-
-      google.maps.event.addListener(placeData.marker, 'click', function() {
-        infoWindow.open(map,placeData.marker);
-        placeData.marker.setAnimation(google.maps.Animation.BOUNCE);
-        setTimeout(function(){ placeData.marker.setAnimation(null); }, 2000);
-      }); 
+      }).error(function(e){
+      alert("Failed to get FourSquare info");
     });
+    } else {
+      alert("Place: " + placeData.name + " does not exist in FourSquare");
+    }
+  }).error(function(e){
+      alert("Failed to get FourSquare info");
   });
 }
 
@@ -166,7 +163,7 @@ var ViewModel = function () {
   // This line makes `map` a new Google Map JavaScript Object.
   map = new google.maps.Map(document.querySelector('#map'), mapOptions);
 
-  //Initialize list and create map markers for each place.
+  //Initialize list and create map markers and info windows for each place.
 
   places.forEach(function(placeItem){
     placeItem.marker = new google.maps.Marker({
@@ -175,7 +172,12 @@ var ViewModel = function () {
         title: placeItem.name
       });
     placeItem.marker.setMap(map);
-    createInfoWindow(placeItem,map);
+    google.maps.event.addListener(placeItem.marker, 'click', function() {
+      createInfoWindow(placeItem,map);
+      placeItem.marker.setAnimation(google.maps.Animation.BOUNCE);
+      setTimeout(function(){ placeItem.marker.setAnimation(null); }, 2000); 
+    });
+    //createInfoWindow(placeItem,map);
     self.placeList.push(new Place(placeItem));
   });
 
@@ -198,6 +200,9 @@ var ViewModel = function () {
       }
     });   
   }, this);
+
+  // This function is called when the user clicks on a place on the list. It animates the map marker 
+  // for the clicked place, gets the FourSquare info that appears in the infoWindow, and open the infoWindow.
 
   this.activateMapMarker = function (clickedPlace){
     console.log ("Enter activateMapMarker");
@@ -246,7 +251,7 @@ var ViewModel = function () {
         infoWindow.open(map,clickedPlace.marker());
         clickedPlace.marker().setAnimation(google.maps.Animation.BOUNCE);
         setTimeout(function(){ clickedPlace.marker().setAnimation(null); }, 2000); 
-      });;
+      });
     });
   }
 
