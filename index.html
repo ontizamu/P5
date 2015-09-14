@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Neighborhood Map</title>
     <link href="css/style.css" rel="stylesheet" type="text/css">
-    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js"></script>
     <script src="js/jQuery.js"></script>
     <meta name="viewport" content="width=device-width"> 
 </head>
@@ -15,7 +15,7 @@
 
         <h3>Fun places</h3>
         <ul data-bind="foreach: placeList" id="places-list">
-            <li data-bind="text: name"></li>
+            <li data-bind="text: name, click: $parent.activateMapMarker"></li>
         </ul>
 
 		<div id="mapDiv">            

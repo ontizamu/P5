@@ -59,14 +59,13 @@ var Place = function (data) {
   this.marker = ko.observable(data.marker)
 };
 
-function getFourSquareInfo(placeData,map)
+function createInfoWindow(placeData,map)
 {
-  console.log ("Enter Four Square: " + placeData.name);
   // Ask for info from FourSquare API and display it in the InfoWindow.
 
   var fsUrl = 'https://api.foursquare.com/v2/venues/search?near=Chandler,%20AZ&oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904&query=' + placeData.name + '';
 
-    $.getJSON (fsUrl, function (data) {
+  $.getJSON (fsUrl, function (data) {
     var placeId;
     placeID = data.response.venues[0].id;
 
@@ -77,41 +76,57 @@ function getFourSquareInfo(placeData,map)
     $.getJSON(detailurl, function (data) {
     //console.dir(data);
 
-    var categoriesLength=data.response.venue.categories.length;
-    for (var i=0; i<categoriesLength-1; i++)
-    {
-      categories = categories + data.response.venue.categories[i].name + ', ';
-    }
-    categories = categories + data.response.venue.categories[categoriesLength-1].name;
-    contactPhone = data.response.venue.contact.formattedPhone;
-    description = data.response.venue.description;
+      var categoriesLength=data.response.venue.categories.length;
+      for (var i=0; i<categoriesLength-1; i++)
+      {
+        categories = categories + data.response.venue.categories[i].name + ', ';
+      }
+      categories = categories + data.response.venue.categories[categoriesLength-1].name;
+      contactPhone = data.response.venue.contact.formattedPhone;
+      description = data.response.venue.description;
 
-    var contentstring = '<div id="content">'+
-    '<div id="siteNotice">'+
-    '</div>'+
-    '<h2 id="firstHeading" class="firstHeading">' + placeData.name + '</h2>'+
-    '<div id="bodyContent">'+
-    '<p>' + categories + '</p>'+
-    '<p>' + placeData.address + ' ' + contactPhone + '</p>' +
-    //'<p>' + description + '</p>' +
-    '</div>'+
-    '</div>';
+      var contentstring = '<div id="content">'+
+      '<div id="siteNotice">'+
+      '</div>'+
+      '<h2 id="firstHeading" class="firstHeading">' + placeData.name + '</h2>'+
+      '<div id="bodyContent">'+
+      '<p>' + categories + '</p>'+
+      '<p>' + placeData.address + ' ' + contactPhone + '</p>' +
+      //'<p>' + description + '</p>' +
+      '</div>'+
+      '</div>';
 
-    //  Create an infoWindow that displays more information about the location
+       //  Create an infoWindow that displays more information about the location
           
-    var infoWindow = new google.maps.InfoWindow({
-      content: contentstring
-    });
+      var infoWindow = new google.maps.InfoWindow({
+        content: contentstring
+      });
 
-    console.log(infoWindow);
 
-     // when the user click on a marker, an infoWindow will open and the marker will bounce.
+      // when the user click on a marker, an infoWindow will open and the marker will bounce.
 
-    google.maps.event.addListener(placeData.marker, 'click', function() {
-      infoWindow.open(map,placeData.marker);
-      placeData.marker.setAnimation(google.maps.Animation.BOUNCE);
-      setTimeout(function(){ placeData.marker.setAnimation(null); }, 2000); 
-    });
+      google.maps.event.addListener(placeData.marker, 'click', function() {
+        infoWindow.open(map,placeData.marker);
+        placeData.marker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(function(){ placeData.marker.setAnimation(null); }, 2000); 
+      }); 
+    }).error(function(e){
+      var contentstring = "Failed to get FourSquare Info";
+
+       //  Create an infoWindow that displays the error message
+          
+      var infoWindow = new google.maps.InfoWindow({
+        content: contentstring
+      });
+
+
+      // when the user click on a marker, an infoWindow will open and the marker will bounce.
+
+      google.maps.event.addListener(placeData.marker, 'click', function() {
+        infoWindow.open(map,placeData.marker);
+        placeData.marker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(function(){ placeData.marker.setAnimation(null); }, 2000);
+      }); 
     });
   });
 }
@@ -160,7 +175,7 @@ var ViewModel = function () {
         title: placeItem.name
       });
     placeItem.marker.setMap(map);
-    getFourSquareInfo(placeItem,map);
+    createInfoWindow(placeItem,map);
     self.placeList.push(new Place(placeItem));
   });
 
@@ -183,6 +198,57 @@ var ViewModel = function () {
       }
     });   
   }, this);
+
+  this.activateMapMarker = function (clickedPlace){
+    console.log ("Enter activateMapMarker");
+    console.log (clickedPlace);
+
+    var contentstring;
+
+    var fsUrl = 'https://api.foursquare.com/v2/venues/search?near=Chandler,%20AZ&oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904&query=' + clickedPlace.name() + '';
+
+    $.getJSON (fsUrl, function (data) {
+      var placeId;
+      placeID = data.response.venues[0].id;
+
+      var detailurl = 'https://api.foursquare.com/v2/venues/' + placeID + '?oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904';
+      var categories='';
+      var contactPhone,description;
+
+      $.getJSON(detailurl, function (data) {
+      //console.dir(data);
+
+        var categoriesLength=data.response.venue.categories.length;
+        for (var i=0; i<categoriesLength-1; i++){
+          categories = categories + data.response.venue.categories[i].name + ', ';
+        }
+        categories = categories + data.response.venue.categories[categoriesLength-1].name;
+        contactPhone = data.response.venue.contact.formattedPhone;
+        description = data.response.venue.description;
+
+        contentstring = '<div id="content">'+
+        '<div id="siteNotice">'+
+        '</div>'+
+        '<h2 id="firstHeading" class="firstHeading">' + clickedPlace.name() + '</h2>'+
+        '<div id="bodyContent">'+
+        '<p>' + categories + '</p>'+
+        '<p>' + clickedPlace.address() + ' ' + contactPhone + '</p>' +
+        //'<p>' + description + '</p>' +
+        '</div>'+
+        '</div>';
+
+        //  Create an infoWindow that displays more information about the location
+          
+        var infoWindow = new google.maps.InfoWindow({
+          content: contentstring
+        });
+
+        infoWindow.open(map,clickedPlace.marker());
+        clickedPlace.marker().setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(function(){ clickedPlace.marker().setAnimation(null); }, 2000); 
+      });;
+    });
+  }
 
   /*// Calls the initializeMap() function when the page loads
   window.addEventListener('load', initializeMap(self.placeList()));
