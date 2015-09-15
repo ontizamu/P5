@@ -201,8 +201,8 @@ var ViewModel = function () {
     });   
   }, this);
 
-  // This function is called when the user clicks on a place on the list. It animates the map marker 
-  // for the clicked place, gets the FourSquare info that appears in the infoWindow, and open the infoWindow.
+  // This function is called when the user clicks on a place on the list. It gets the FourSquare info 
+  // that appears in the infoWindow, and open the infoWindow.
 
   this.activateMapMarker = function (clickedPlace){
     console.log ("Enter activateMapMarker");
@@ -213,46 +213,60 @@ var ViewModel = function () {
     var fsUrl = 'https://api.foursquare.com/v2/venues/search?near=Chandler,%20AZ&oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904&query=' + clickedPlace.name() + '';
 
     $.getJSON (fsUrl, function (data) {
-      var placeId;
-      placeID = data.response.venues[0].id;
+      if (data.response.venues.length>0)
+      {
+        var placeId;
+        placeID = data.response.venues[0].id;
 
-      var detailurl = 'https://api.foursquare.com/v2/venues/' + placeID + '?oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904';
-      var categories='';
-      var contactPhone,description;
+        var detailurl = 'https://api.foursquare.com/v2/venues/' + placeID + '?oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904';
+        var categories='';
+        var contactPhone,description;
 
-      $.getJSON(detailurl, function (data) {
-      //console.dir(data);
+        $.getJSON(detailurl, function (data) {
+        //console.dir(data);
 
-        var categoriesLength=data.response.venue.categories.length;
-        for (var i=0; i<categoriesLength-1; i++){
-          categories = categories + data.response.venue.categories[i].name + ', ';
-        }
-        categories = categories + data.response.venue.categories[categoriesLength-1].name;
-        contactPhone = data.response.venue.contact.formattedPhone;
-        description = data.response.venue.description;
+          if (data.response.venue.categories.length > 0 && data.response.venue.contact.formattedPhone){
 
-        contentstring = '<div id="content">'+
-        '<div id="siteNotice">'+
-        '</div>'+
-        '<h2 id="firstHeading" class="firstHeading">' + clickedPlace.name() + '</h2>'+
-        '<div id="bodyContent">'+
-        '<p>' + categories + '</p>'+
-        '<p>' + clickedPlace.address() + ' ' + contactPhone + '</p>' +
-        //'<p>' + description + '</p>' +
-        '</div>'+
-        '</div>';
+            var categoriesLength=data.response.venue.categories.length;
+            for (var i=0; i<categoriesLength-1; i++){
+              categories = categories + data.response.venue.categories[i].name + ', ';
+            }
+            categories = categories + data.response.venue.categories[categoriesLength-1].name;
+            contactPhone = data.response.venue.contact.formattedPhone;
+            description = data.response.venue.description;
 
-        //  Create an infoWindow that displays more information about the location
+            contentstring = '<div id="content">'+
+            '<div id="siteNotice">'+
+            '</div>'+
+            '<h2 id="firstHeading" class="firstHeading">' + clickedPlace.name() + '</h2>'+
+            '<div id="bodyContent">'+
+            '<p>' + categories + '</p>'+
+            '<p>' + clickedPlace.address() + ' ' + contactPhone + '</p>' +
+            //'<p>' + description + '</p>' +
+            '</div>'+
+            '</div>';
+
+            //  Create an infoWindow that displays more information about the location
           
-        var infoWindow = new google.maps.InfoWindow({
-          content: contentstring
-        });
+            var infoWindow = new google.maps.InfoWindow({
+              content: contentstring
+            });
 
-        infoWindow.open(map,clickedPlace.marker());
-        clickedPlace.marker().setAnimation(google.maps.Animation.BOUNCE);
-        setTimeout(function(){ clickedPlace.marker().setAnimation(null); }, 2000); 
+            infoWindow.open(map,clickedPlace.marker());
+          } else {
+          alert(clickedPlace.name() + " info is not complete");
+        }
+        }).error(function(e){
+       alert("Failed to get FourSquare info");
       });
+      } else {
+        alert("Place: " + clickedPlace.name() + " does not exist in FourSquare");
+      }
+    }).error(function(e){
+        alert("Failed to get FourSquare info");
     });
+    clickedPlace.marker().setAnimation(google.maps.Animation.BOUNCE);
+    setTimeout(function(){ clickedPlace.marker().setAnimation(null); }, 2000);
   }
 
   /*// Calls the initializeMap() function when the page loads
