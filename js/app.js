@@ -97,7 +97,7 @@ function createInfoWindow(placeData,map){
         var contentstring = '<div id="content">'+
         '<div id="siteNotice">'+
         '</div>'+
-        '<h2 id="firstHeading" class="firstHeading">' + placeData.name + '</h2>'+
+        '<h4 id="firstHeading" class="firstHeading">' + placeData.name + '</h4>'+
         '<div id="bodyContent">'+
         '<p>' + categories + '</p>'+
         '<p>' + placeData.address + ' ' + contactPhone + '</p>' +
@@ -146,60 +146,67 @@ function createInfoWindow(placeData,map){
   }*/
 
 var ViewModel = function () {
-  var self = this;
+  
+  // Check if google maps is working 
 
-  // Observable array of places
+  if (typeof google === 'object' && typeof google.maps === 'object') {
 
-  this.placeList = ko.observableArray([]);
+    var self = this;
 
-  var map;
+    // Observable array of places
 
-  var mapOptions = {
+    this.placeList = ko.observableArray([]);
+
+    var map;
+
+    var mapOptions = {
       center: new google.maps.LatLng(33.3000,-111.8333),
       zoom: 13,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     };
 
-  // This line makes `map` a new Google Map JavaScript Object.
-  map = new google.maps.Map(document.querySelector('#map'), mapOptions);
+    // This line makes `map` a new Google Map JavaScript Object.
+    map = new google.maps.Map(document.querySelector('#map'), mapOptions);
 
-  //Initialize list and create map markers and info windows for each place.
+    //Initialize list and create map markers and info windows for each place.
 
-  places.forEach(function(placeItem){
-    placeItem.marker = new google.maps.Marker({
-        map: map,
-        position: {lat:placeItem.lat, lng:placeItem.lng},
-        title: placeItem.name
+    places.forEach(function(placeItem){
+      placeItem.marker = new google.maps.Marker({
+          map: map,
+          position: {lat:placeItem.lat, lng:placeItem.lng},
+          title: placeItem.name
       });
-    placeItem.marker.setMap(map);
-    google.maps.event.addListener(placeItem.marker, 'click', function() {
-      createInfoWindow(placeItem,map);
-      placeItem.marker.setAnimation(google.maps.Animation.BOUNCE);
-      setTimeout(function(){ placeItem.marker.setAnimation(null); }, 2000); 
+      placeItem.marker.setMap(map);
+      google.maps.event.addListener(placeItem.marker, 'click', function() {
+        createInfoWindow(placeItem,map);
+        placeItem.marker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(function(){ placeItem.marker.setAnimation(null); }, 2000); 
+      });
+      self.placeList.push(new Place(placeItem));
     });
-    //createInfoWindow(placeItem,map);
-    self.placeList.push(new Place(placeItem));
-  });
 
-  this.searchString = ko.observable('');
+    this.searchString = ko.observable('');
 
-  //This computed variable filters list and map markers
+    //This computed variable filters list and map markers
 
-  self.filter = ko.computed(function() {
+    self.filter = ko.computed(function() {
 
-    var inputValue = self.searchString();
+      var inputValue = self.searchString();
   
-    self.placeList.removeAll();
+      self.placeList.removeAll();
 
-    places.forEach(function(placeItem,place){
-      if (places[place].name.toLowerCase().indexOf(inputValue.toLowerCase())>=0) {
-        places[place].marker.setVisible(true);
-        self.placeList.push(new Place(placeItem));        
-      } else {
-        places[place].marker.setVisible(false);
-      }
-    });   
-  }, this);
+      places.forEach(function(placeItem,place){
+        if (places[place].name.toLowerCase().indexOf(inputValue.toLowerCase())>=0) {
+          places[place].marker.setVisible(true);
+          self.placeList.push(new Place(placeItem));        
+        } else {
+          places[place].marker.setVisible(false);
+        }
+      });   
+    }, this);
+  } else {
+      alert("The map cannot be loaded");
+  }
 
   // This function is called when the user clicks on a place on the list. It gets the FourSquare info 
   // that appears in the infoWindow, and open the infoWindow.
@@ -238,7 +245,7 @@ var ViewModel = function () {
             contentstring = '<div id="content">'+
             '<div id="siteNotice">'+
             '</div>'+
-            '<h2 id="firstHeading" class="firstHeading">' + clickedPlace.name() + '</h2>'+
+            '<h4 id="firstHeading" class="firstHeading">' + clickedPlace.name() + '</h4>'+
             '<div id="bodyContent">'+
             '<p>' + categories + '</p>'+
             '<p>' + clickedPlace.address() + ' ' + contactPhone + '</p>' +

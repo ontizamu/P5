@@ -2,26 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, intial-scale=1">
     <title>Neighborhood Map</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <link href="css/style.css" rel="stylesheet" type="text/css">
     <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js"></script>
     <script src="js/jQuery.js"></script>
     <meta name="viewport" content="width=device-width"> 
 </head>
 <body>
-	<div id="main">
-        <label for="search">Search:</label>
-        <input id="search-bar" type="text" size="40" data-bind="textInput: searchString">
-
-        <h3>Fun places</h3>
-        <ul data-bind="foreach: placeList" id="places-list">
-            <li data-bind="text: name, click: $parent.activateMapMarker"></li>
-        </ul>
-
-		<div id="mapDiv">            
-            <div id="map">
+	<div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <label for="search">Search:</label>
+                <input id="search-bar" type="text" size="40" data-bind="textInput: searchString">
             </div>
-		</div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <h4>Fun places to go in Chandler, AZ</h4>
+                <ul data-bind="foreach: placeList" id="places-list">
+                    <li data-bind="text: name, click: $parent.activateMapMarker"></li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+		      <div id="mapDiv">            
+                <div id="map">
+                </div>
+		      </div>
+            </div>
+        </div>
 	</div>
     <script src="js/lib/knockout-3.3.0.js"></script>
     <script src="js/app.js"></script>    
