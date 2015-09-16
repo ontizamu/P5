@@ -6,7 +6,7 @@ It features a list of fun places in Chandler, AZ, and a map with map markers sho
 
 ##How to run the application
 
-Open index.html. The application consists in a search bar, a list and a map with places to go for fun in Chandler, AZ.
+Open index.html. The application will show a search bar, a list and a map with places to go for fun in Chandler, AZ.
 
 The search bar filters the list and map markers. 
 
