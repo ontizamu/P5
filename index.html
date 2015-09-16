@@ -14,15 +14,15 @@
 	<div class="container">
         <div class="row">
             <div class="col-md-12">
-                <label for="search">Search:</label>
-                <input id="search-bar" type="text" size="40" data-bind="textInput: searchString">
+                <label id="search-label" for="search">Search:</label>
+                <input id="search-bar" type="text" size="30" data-bind="textInput: searchString">
             </div>
         </div>
         <div class="row">
             <div class="col-md-4">
                 <h4>Fun places to go in Chandler, AZ</h4>
-                <ul data-bind="foreach: placeList" id="places-list">
-                    <li data-bind="text: name, click: $parent.activateMapMarker"></li>
+                <ul class="list-group" data-bind="foreach: placeList" id="places-list">
+                    <li class= "list-group-item" data-bind="text: name, click: $parent.activateMapMarker"></li>
                 </ul>
             </div>
             <div class="col-md-6">

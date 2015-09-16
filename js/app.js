@@ -1,3 +1,4 @@
+// Array with all the places that will appear in the list and the map
 var places = [
      {
         name:'Arrowhead Meadows Park',
@@ -82,7 +83,6 @@ function createInfoWindow(placeData,map){
       // Get place info: categories and contact phone.
 
       $.getJSON(detailurl, function (data) {
-      console.dir(data);
 
       if (data.response.venue.categories.length > 0 && data.response.venue.contact.formattedPhone){
 
@@ -92,7 +92,6 @@ function createInfoWindow(placeData,map){
         }
         categories = categories + data.response.venue.categories[categoriesLength-1].name;
         contactPhone = data.response.venue.contact.formattedPhone;
-        //description = data.response.venue.description;
 
         var contentstring = '<div id="content">'+
         '<div id="siteNotice">'+
@@ -101,7 +100,6 @@ function createInfoWindow(placeData,map){
         '<div id="bodyContent">'+
         '<p>' + categories + '</p>'+
         '<p>' + placeData.address + ' ' + contactPhone + '</p>' +
-        //'<p>' + description + '</p>' +
         '</div>'+
         '</div>';
 
@@ -129,22 +127,6 @@ function createInfoWindow(placeData,map){
 }
 
          
-/*
-      // this is where the pin actually gets added to the map.
-      // bounds.extend() takes in a map location object
-      bounds.extend(new google.maps.LatLng(placeData.lat, placeData.lng));
-      // fit the map to the new marker
-      map.fitBounds(bounds);
-      // center the map
-      map.setCenter(bounds.getCenter());
-    }
-
-    // Sets the boundaries of the map based on pin locations
-    window.mapBounds = new google.maps.LatLngBounds();
-    
-
-  }*/
-
 var ViewModel = function () {
   
   // Check if google maps is working 
@@ -160,13 +142,14 @@ var ViewModel = function () {
     var map;
 
     var mapOptions = {
-      center: new google.maps.LatLng(33.3000,-111.8333),
-      zoom: 13,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
+      disableDefaultUI: true
     };
 
     // This line makes `map` a new Google Map JavaScript Object.
     map = new google.maps.Map(document.querySelector('#map'), mapOptions);
+
+    //Set the boundaries of the map.
+    var bounds = new google.maps.LatLngBounds();
 
     //Initialize list and create map markers and info windows for each place.
 
@@ -176,7 +159,13 @@ var ViewModel = function () {
           position: {lat:placeItem.lat, lng:placeItem.lng},
           title: placeItem.name
       });
-      placeItem.marker.setMap(map);
+      // map marker gets added to the map;
+      bounds.extend(new google.maps.LatLng(placeItem.lat, placeItem.lng));
+      // fit the map to the new marker
+      map.fitBounds(bounds);
+      // center the map
+      map.setCenter(bounds.getCenter());
+      // if the user clicks a map marker, an info window is opened and the map marker bounces. 
       google.maps.event.addListener(placeItem.marker, 'click', function() {
         createInfoWindow(placeItem,map);
         placeItem.marker.setAnimation(google.maps.Animation.BOUNCE);
@@ -195,6 +184,8 @@ var ViewModel = function () {
   
       self.placeList.removeAll();
 
+      // This loop shows the list items and map markers that match the search string, if there is no
+      // search string, all list items and map markers are showed.
       places.forEach(function(placeItem,place){
         if (places[place].name.toLowerCase().indexOf(inputValue.toLowerCase())>=0) {
           places[place].marker.setVisible(true);
@@ -209,11 +200,9 @@ var ViewModel = function () {
   }
 
   // This function is called when the user clicks on a place on the list. It gets the FourSquare info 
-  // that appears in the infoWindow, and open the infoWindow.
+  // that appears in the infoWindow, open the infoWindow and animates the map marker.
 
   this.activateMapMarker = function (clickedPlace){
-    console.log ("Enter activateMapMarker");
-    console.log (clickedPlace);
 
     var contentstring;
 
@@ -240,7 +229,6 @@ var ViewModel = function () {
             }
             categories = categories + data.response.venue.categories[categoriesLength-1].name;
             contactPhone = data.response.venue.contact.formattedPhone;
-            description = data.response.venue.description;
 
             contentstring = '<div id="content">'+
             '<div id="siteNotice">'+
@@ -249,7 +237,6 @@ var ViewModel = function () {
             '<div id="bodyContent">'+
             '<p>' + categories + '</p>'+
             '<p>' + clickedPlace.address() + ' ' + contactPhone + '</p>' +
-            //'<p>' + description + '</p>' +
             '</div>'+
             '</div>';
 
@@ -275,16 +262,6 @@ var ViewModel = function () {
     clickedPlace.marker().setAnimation(google.maps.Animation.BOUNCE);
     setTimeout(function(){ clickedPlace.marker().setAnimation(null); }, 2000);
   }
-
-  /*// Calls the initializeMap() function when the page loads
-  window.addEventListener('load', initializeMap(self.placeList()));
-
-  // Vanilla JS way to listen for resizing of the window
-  // and adjust map bounds
-  window.addEventListener('resize', function(e) {
-  // Make sure the map bounds get updated on page resize
-    map.fitBounds(mapBounds);
-  });*/
 };
 
 ko.applyBindings(new ViewModel());
