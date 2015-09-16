@@ -129,7 +129,8 @@ function createInfoWindow(placeData,map){
          
 var ViewModel = function () {
   
-  // Check if google maps is working 
+  // Check if google maps is working
+  // Found the way to do it at http://stackoverflow.com/questions/9228958/how-to-check-if-google-maps-api-is-loaded
 
   if (typeof google === 'object' && typeof google.maps === 'object') {
 
@@ -176,7 +177,8 @@ var ViewModel = function () {
 
     this.searchString = ko.observable('');
 
-    //This computed variable filters list and map markers
+    //This computed variable filters list and map markers. 
+    // This was a hard one, I found how to do it at Udacity forums.
 
     self.filter = ko.computed(function() {
 
