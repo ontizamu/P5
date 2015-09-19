@@ -212,8 +212,6 @@ var ViewModel = function () {
   this.activateMapMarker = function (clickedPlace){
 
     google.maps.event.trigger(clickedPlace.marker(), 'click');
-    clickedPlace.marker().setAnimation(google.maps.Animation.BOUNCE);
-    setTimeout(function(){ clickedPlace.marker().setAnimation(null); }, 2000);
   
   };
 };
