@@ -1,64 +1,66 @@
 // Array with all the places that will appear in the list and the map
 var places = [
-     {
-        name:'Arrowhead Meadows Park',
-        address:'1475 W Erie St Chandler, AZ',
-        lat: 33.308411,
-        lng: -111.866398,
-        marker: ''
-      },
-      {
-        name:'Chandler Center for the Arts',
-        address:'250 N Arizona Ave Chandler, AZ',
-        lat: 33.3073872,
-        lng: -111.8424549,
-        marker: ''
-      },
-      {
-        name:'Chandler Public Library',
-        address:'22 S Delaware St Chandler, AZ',
-        lat: 33.3033887,
-        lng: -111.83803920000003,
-        marker: ''
-      },
-      { 
-        name:'Skateland',
-        address:'1101 W Ray Rd Chandler, AZ',
-        lat: 33.3198703,
-        lng: -111.86147189999997,
-        marker: ''
-      },
-      {
-        name:'Tumbleweed Park',
-        address:'745 E Germann Rd Chandler, AZ',
-        lat: 33.276005,
-        lng: -111.82938039999999,
-        marker: ''
-      },
-      {
-        name:'Vision Gallery',
-        address:'10 E Chicago St Chandler, AZ',
-        lat: 33.3006309,
-        lng: -111.84133159999999,
-        marker: ''
-      },
-      {
-        name:'Xtreme Air Jump N Skate',
-        address:'910 E Pecos Rd Chandler, AZ',
-        lat: 33.2930177,
-        lng: -111.82698779999998,
-        marker: ''
-      }
+  {
+    name:'Arrowhead Meadows Park',
+    address:'1475 W Erie St Chandler, AZ',
+    lat: 33.308411,
+    lng: -111.866398,
+    marker: ''
+  },
+  {
+    name:'Chandler Center for the Arts',
+    address:'250 N Arizona Ave Chandler, AZ',
+    lat: 33.3073872,
+    lng: -111.8424549,
+    marker: ''
+  },
+  {
+    name:'Chandler Public Library',
+    address:'22 S Delaware St Chandler, AZ',
+    lat: 33.3033887,
+    lng: -111.83803920000003,
+    marker: ''
+  },
+  { 
+    name:'Skateland',
+    address:'1101 W Ray Rd Chandler, AZ',
+    lat: 33.3198703,
+    lng: -111.86147189999997,
+    marker: ''
+  },
+  {
+    name:'Tumbleweed Park',
+    address:'745 E Germann Rd Chandler, AZ',
+    lat: 33.276005,
+    lng: -111.82938039999999,
+    marker: ''
+  },
+  {
+    name:'Vision Gallery',
+    address:'10 E Chicago St Chandler, AZ',
+    lat: 33.3006309,
+    lng: -111.84133159999999,
+    marker: ''
+  },
+  {
+    name:'Xtreme Air Jump N Skate',
+    address:'910 E Pecos Rd Chandler, AZ',
+    lat: 33.2930177,
+    lng: -111.82698779999998,
+    marker: ''
+  }
 ];
 
 
 var Place = function (data) {
-  this.name = ko.observable (data.name);
-  this.address = ko.observable (data.address);
+  this.name = ko.observable(data.name);
+  this.address = ko.observable(data.address);
   this.lat = ko.observable(data.lat);
   this.lng = ko.observable(data.lng);
-  this.marker = ko.observable(data.marker)
+  this.marker = ko.observable(data.marker);
 };
+
+var infoWindow;
 
 function createInfoWindow(placeData,map){
 
@@ -70,11 +72,9 @@ function createInfoWindow(placeData,map){
 
   $.getJSON (fsUrl, function (data) {
 
-    if (data.response.venues.length>0)
-    {
+    if (data.response.venues.length>0) {
 
-      var placeId;
-      placeID = data.response.venues[0].id;
+      var placeID = data.response.venues[0].id;
 
       var detailurl = 'https://api.foursquare.com/v2/venues/' + placeID + '?oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904';
       var categories='';
@@ -103,9 +103,14 @@ function createInfoWindow(placeData,map){
         '</div>'+
         '</div>';
 
+        // Is there currently an open infoWindow?
+        if (infoWindow !== undefined) {
+          infoWindow.close();
+        }
+
         //  Create an infoWindow that displays more information about the location
           
-        var infoWindow = new google.maps.InfoWindow({
+        infoWindow = new google.maps.InfoWindow({
           content: contentstring
         });
 
@@ -201,69 +206,16 @@ var ViewModel = function () {
       alert("The map cannot be loaded");
   }
 
-  // This function is called when the user clicks on a place on the list. It gets the FourSquare info 
-  // that appears in the infoWindow, open the infoWindow and animates the map marker.
+  // This function is called when the user clicks on a place on the list. 
+  // It triggers a click on the clickedPlace's map marker, calling the CreateInfoWindow function.
 
   this.activateMapMarker = function (clickedPlace){
 
-    var contentstring;
-
-    var fsUrl = 'https://api.foursquare.com/v2/venues/search?near=Chandler,%20AZ&oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904&query=' + clickedPlace.name() + '';
-
-    $.getJSON (fsUrl, function (data) {
-      if (data.response.venues.length>0)
-      {
-        var placeId;
-        placeID = data.response.venues[0].id;
-
-        var detailurl = 'https://api.foursquare.com/v2/venues/' + placeID + '?oauth_token=FIIGA1OLVC2SSSVTDTN43WU1XOXIKV0JAKE2H4CZMD2JPH0W&v=20150904';
-        var categories='';
-        var contactPhone,description;
-
-        $.getJSON(detailurl, function (data) {
-        //console.dir(data);
-
-          if (data.response.venue.categories.length > 0 && data.response.venue.contact.formattedPhone){
-
-            var categoriesLength=data.response.venue.categories.length;
-            for (var i=0; i<categoriesLength-1; i++){
-              categories = categories + data.response.venue.categories[i].name + ', ';
-            }
-            categories = categories + data.response.venue.categories[categoriesLength-1].name;
-            contactPhone = data.response.venue.contact.formattedPhone;
-
-            contentstring = '<div id="content">'+
-            '<div id="siteNotice">'+
-            '</div>'+
-            '<h4 id="firstHeading" class="firstHeading">' + clickedPlace.name() + '</h4>'+
-            '<div id="bodyContent">'+
-            '<p>' + categories + '</p>'+
-            '<p>' + clickedPlace.address() + ' ' + contactPhone + '</p>' +
-            '</div>'+
-            '</div>';
-
-            //  Create an infoWindow that displays more information about the location
-          
-            var infoWindow = new google.maps.InfoWindow({
-              content: contentstring
-            });
-
-            infoWindow.open(map,clickedPlace.marker());
-          } else {
-          alert(clickedPlace.name() + " info is not complete");
-        }
-        }).error(function(e){
-       alert("Failed to get FourSquare info");
-      });
-      } else {
-        alert("Place: " + clickedPlace.name() + " does not exist in FourSquare");
-      }
-    }).error(function(e){
-        alert("Failed to get FourSquare info");
-    });
+    google.maps.event.trigger(clickedPlace.marker(), 'click');
     clickedPlace.marker().setAnimation(google.maps.Animation.BOUNCE);
     setTimeout(function(){ clickedPlace.marker().setAnimation(null); }, 2000);
-  }
+  
+  };
 };
 
 ko.applyBindings(new ViewModel());
